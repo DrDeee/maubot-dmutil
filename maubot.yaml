@@ -1,0 +1,7 @@
+maubot: 0.1.0
+id: re.fffutu.dm_util
+version: 1.0.0
+license: MIT
+modules:
+  - dm_util
+main_class: DMUtilPlugin
