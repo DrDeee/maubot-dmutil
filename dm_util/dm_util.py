@@ -1,3 +1,5 @@
+from typing import Optional
+
 from maubot import Plugin
 from maubot.handlers import event
 from mautrix.errors import MNotFound
@@ -36,10 +38,20 @@ class DMUtilPlugin(Plugin):
         if len(members) == 0:
             await self.client.leave_room(room)
             self.log.debug(f"Leaving room {room}: No more members")
+            await self.clear_account_data()
+
+    async def clear_account_data(self, account_data: Optional[dict] = None):
+        if account_data is None:
             account_data = await self.client.get_account_data(EventType.DIRECT)
-            for user in account_data:
-                if room in user:
-                    account_data[user].remove(room)
-                    if len(account_data[user]) == 0:
-                        del account_data[user]
-            self.client.set_account_data(EventType.DIRECT, account_data)
+        rooms = await self.client.get_joined_rooms()
+
+        new_account_data = {}
+        for user in account_data:
+            new_account_data[user] = []
+            for r in account_data[user]:
+                if r in rooms:
+                    new_account_data[user].append(r)
+            if len(new_account_data[user]) is 0:
+                del new_account_data[user]
+
+        await self.client.set_account_data(EventType.DIRECT, new_account_data)
